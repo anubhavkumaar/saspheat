@@ -312,27 +312,32 @@ function HomePage() {
 /* ── RACING SOP ──────────────────────────────────────────── */
 const SOP_STEPS = [
   {
-    num: '01', title: 'Intelligence Collection', icon: Icon.doc,
+    num: '01', title: 'Intelligence Collection',
+    badge: 'OBSERVE', badgeCls: 'blue',
     text: 'Whenever you observe multiple speeding vehicles or a location where racers are gathering, officers must first collect all possible evidence — vehicle number plates, models, colors, and any other identifying details.',
   },
   {
-    num: '02', title: 'Allow the Race to Begin', icon: Icon.flag,
-    text: 'Once the race begins, or when the vehicles pass your position, allow the racers to pass first and begin following the last vehicle in the group. Officers must not interfere with the race while it is active.',
+    num: '02', title: 'Allow the Race to Run',
+    badge: 'HOLD POSITION', badgeCls: 'gray',
+    text: 'Once the race begins, allow the racers to pass first and begin following the last vehicle in the group. Officers must not interfere with the race while it is active.',
     alert: 'Do not engage or activate emergency lights while the race is in progress.',
   },
   {
-    num: '03', title: 'No PIT During Active Race', icon: Icon.stop,
-    text: 'Do not perform PIT maneuvers or activate emergency lights and sirens if multiple racing vehicles are still grouped together. This creates unnecessary danger and confusion for both officers and civilians.',
-    alert: 'PIT maneuvers are prohibited while racers remain grouped.',
+    num: '03', title: 'No PIT During Active Race',
+    badge: 'PROHIBITED', badgeCls: 'red',
+    text: 'Do not perform PIT maneuvers or activate emergency lights and sirens if multiple racing vehicles are still grouped together. This creates unnecessary danger and confusion for officers and civilians.',
+    alert: 'PIT maneuvers are strictly prohibited while racers remain grouped.',
   },
   {
-    num: '04', title: 'Post-Race Pursuit', icon: Icon.chevrons,
+    num: '04', title: 'Post-Race Pursuit',
+    badge: 'PURSUE', badgeCls: 'gold',
     text: 'After the race has concluded, officers may initiate a standard pursuit on the identified vehicle. At the finish line, officers must avoid ramming or performing PIT maneuvers on any vehicle.',
   },
   {
-    num: '05', title: 'Vehicle Switch Protocol', icon: Icon.target,
+    num: '05', title: 'Vehicle Switch Protocol',
+    badge: 'CMD REQUIRED', badgeCls: 'blue',
     text: "If vehicle switches occur during the pursuit, officers are authorized to disable the tires of the fourth vehicle involved. The third vehicle's tires may be disabled if necessary, subject to command authorization.",
-    alert: 'Tire disable on the 3rd vehicle requires command authorization.',
+    alert: 'Tire disable on the 3rd vehicle requires explicit command authorization.',
   },
 ]
 
@@ -345,7 +350,8 @@ function RacingSopPage() {
         <div className="sec-sop-bg" style={{ backgroundImage: 'url(/gta-pd-7.jpg)' }}/>
         <div className="sec-inner" style={{ position: 'relative', zIndex: 2 }}>
           <div className="sop-layout">
-            {/* Steps */}
+
+            {/* Timeline steps */}
             <div>
               <Reveal>
                 <div className="sec-head" style={{ marginBottom: '0' }}>
@@ -356,68 +362,116 @@ function RacingSopPage() {
                 </div>
               </Reveal>
 
-              <div className="sop-steps" style={{ marginTop: '2rem' }}>
+              <div className="sop-timeline" style={{ marginTop: '2.5rem' }}>
                 {SOP_STEPS.map((s, i) => (
-                  <Reveal key={i} delay={i * 0.07} dir="left">
-                    <div className="sop-step">
-                      <div className="sop-index">{s.num}</div>
-                      <div className="sop-body">
-                        <div className="sop-title">{s.title}</div>
-                        <p className="sop-text">{s.text}</p>
+                  <Reveal key={i} delay={i * 0.09} dir="left">
+                    <motion.div
+                      className={`sop-card${s.badgeCls === 'red' ? ' sop-card--danger' : s.badgeCls === 'gold' ? ' sop-card--pursue' : ''}`}
+                      whileHover={{ x: 6 }}
+                      transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+                    >
+                      <div className="sop-card-accent"/>
+                      <div className="sop-card-ghost">{s.num}</div>
+                      <div className="sop-card-inner">
+                        <div className="sop-card-meta">
+                          <span className="sop-card-phase">PHASE {s.num}</span>
+                          <span className={`sop-badge-status sop-badge-status--${s.badgeCls}`}>{s.badge}</span>
+                        </div>
+                        <div className="sop-card-title">{s.title}</div>
+                        <p className="sop-card-text">{s.text}</p>
                         {s.alert && (
-                          <div className="sop-alert">
+                          <motion.div
+                            className="sop-card-alert"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            transition={{ delay: i * 0.09 + 0.2 }}
+                          >
                             {Icon.warn}
-                            {s.alert}
-                          </div>
+                            <span>{s.alert}</span>
+                          </motion.div>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
+                    {i < SOP_STEPS.length - 1 && (
+                      <div className="sop-connector">
+                        <div className="sop-connector-line"/>
+                        <div className="sop-connector-arrow"/>
+                      </div>
+                    )}
                   </Reveal>
                 ))}
               </div>
             </div>
 
-            {/* Sidebar */}
-            <Reveal delay={0.25} dir="right">
+            {/* Sidebar — MDT style */}
+            <Reveal delay={0.3} dir="right">
               <div className="sop-sidebar">
-                <div className="sidebar-card">
+
+                <div className="sidebar-card sidebar-mdt">
+                  <div className="mdt-header">
+                    <span className="mdt-dot"/>
+                    <span className="mdt-label">UNIT STATUS</span>
+                    <span className="mdt-active">ACTIVE</span>
+                  </div>
                   <div className="sidebar-card-title">Quick Reference</div>
                   <div className="qref-row">
                     {[
-                      { label: 'During race',       val: 'Follow last car',     cls: 'ok'  },
-                      { label: 'PIT during race',   val: 'Prohibited',          cls: 'no'  },
-                      { label: 'PIT at finish',     val: 'Prohibited',          cls: 'no'  },
-                      { label: 'Tire disable — 4th', val: 'Authorized',         cls: 'ok'  },
-                      { label: 'Tire disable — 3rd', val: 'Cmd required',       cls: 'cmd' },
-                      { label: 'Lights & sirens',   val: 'Post-race only',      cls: 'ok'  },
+                      { label: 'During race',        val: 'Follow last car', cls: 'ok'  },
+                      { label: 'PIT during race',    val: 'Prohibited',      cls: 'no'  },
+                      { label: 'PIT at finish line', val: 'Prohibited',      cls: 'no'  },
+                      { label: 'Tire disable — 4th', val: 'Authorized',      cls: 'ok'  },
+                      { label: 'Tire disable — 3rd', val: 'Cmd required',    cls: 'cmd' },
+                      { label: 'Lights & sirens',    val: 'Post-race only',  cls: 'ok'  },
                     ].map((r, i) => (
-                      <div key={i} className="qref-item">
+                      <motion.div key={i} className={`qref-item ${r.cls}-row`}
+                        whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
+                        transition={{ duration: .15 }}
+                      >
                         <span className="qref-label">{r.label}</span>
                         <span className={`qref-val ${r.cls}`}>{r.val}</span>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
 
                 <div className="sidebar-card">
                   <div className="sidebar-card-title">Key Principles</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+                  <div className="key-principles">
                     {[
                       'Evidence first — always.',
                       'Let the race run its course.',
-                      'Pursue after the race ends.',
+                      'Pursue only after race ends.',
                       'PIT only where authorized.',
                       'Coordinate with ASD overhead.',
                     ].map((p, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '.6rem', alignItems: 'flex-start' }}>
-                        <span style={{ color: 'var(--gold)', fontFamily: 'var(--mono)', fontSize: '.65rem', marginTop: '.15rem', flexShrink: 0 }}>
-                          {String(i + 1).padStart(2, '0')}
-                        </span>
-                        <span style={{ fontSize: '.87rem', color: 'var(--t2)', lineHeight: 1.55 }}>{p}</span>
+                      <motion.div key={i} className="principle-row"
+                        whileHover={{ x: 4 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      >
+                        <span className="principle-num">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="principle-text">{p}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="sidebar-card sidebar-card--dispatch">
+                  <div className="sidebar-card-title">Dispatch Code</div>
+                  <div className="dispatch-grid">
+                    {[
+                      { code: '10-80', label: 'Pursuit in progress' },
+                      { code: '10-4',  label: 'Acknowledged' },
+                      { code: '10-22', label: 'Disregard' },
+                      { code: '10-99', label: 'Officer needs backup' },
+                    ].map((d, i) => (
+                      <div key={i} className="dispatch-item">
+                        <span className="dispatch-code">{d.code}</span>
+                        <span className="dispatch-label">{d.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
+
               </div>
             </Reveal>
           </div>
@@ -456,24 +510,42 @@ function SOIPage() {
                 <span className="soi-badge ground">Ground Unit</span>
               </div>
               <div className="soi-divider"/>
+
+              <div className="soi-quote-block">
+                <span className="soi-quote-mark">"</span>
+                <p className="soi-quote-text">
+                  Standard patrol can't touch a GT-R pulling 180 on the freeway. That's not a gap in training — that's a gap in hardware. HEAT closes that gap.
+                </p>
+                <div className="soi-quote-author">
+                  <span className="soi-quote-name">Cpl. Alfaro Jones</span>
+                  <span className="soi-quote-rank">Corporal · LSPD · HEAT Division</span>
+                </div>
+              </div>
+
+              <div className="soi-divider"/>
+
               <p className="soi-text">
-                HEAT is a specialized highway enforcement unit built around one purpose — intercepting aggressive drivers and street racers that standard patrol units cannot match. Officers are assigned purpose-built, high-performance interceptor vehicles capable of sustaining pursuit at speeds that exceed most illegal race cars on the highway.
+                The streets of Los Santos have evolved. We're no longer dealing with modified domestics and tuner sedans. The scene runs Nissan GT-Rs, Porsche 911 Turbos, Lamborghini Huracáns, Dodge Vipers — factory-built machines imported and stripped for maximum speed. A standard cruiser at 140 mph is already behind. By the time dispatch clears a pursuit, the target is two exits gone.
               </p>
               <p className="soi-text">
-                During an active street race, HEAT's primary role is observation and positioning. Officers follow the last vehicle in the group, collect evidence, and hold their position until the race concludes. Once the race ends, HEAT initiates a controlled pursuit on the identified suspect.
+                HEAT was purpose-built to answer that problem. Our officers drive interceptor-spec vehicles tuned to match or exceed the top speeds of the cars we chase. We don't react to street races — we anticipate them. We position ahead, collect evidence, identify the lead vehicle, and wait. Patience is our doctrine.
               </p>
               <p className="soi-text">
-                HEAT officers are authorized to perform PIT maneuvers and tire disablements only during post-race pursuit — never while the race is active. The unit's effectiveness depends entirely on patience, positioning, and precise intervention at the right moment.
+                When the race ends, HEAT moves. Officers initiate a controlled pursuit on the identified suspect — clean, calculated, and lawful. PIT maneuvers and tire disablements are authorized during post-race pursuit only, executed on command and only when conditions allow a safe stop. We don't turn an enforcement action into another public hazard.
               </p>
+              <p className="soi-text">
+                If you've been watching a pack of imports light up the highway at 2 AM and wondering who's going to do something about it — that's us. That's what HEAT is for.
+              </p>
+
               <div className="soi-divider"/>
               <div className="soi-asd-note">
                 <span className="soi-asd-label">ASD Support</span>
                 <p className="soi-text" style={{ marginBottom: 0 }}>
-                  Air Support Division provides aerial overwatch to assist HEAT ground units. When a lead racer pulls beyond ground pursuit range, ASD tracks from altitude and relays position data — keeping HEAT informed without premature engagement. ASD does not lead enforcement; it exists to make HEAT more effective.
+                  Air Support Division provides aerial overwatch when lead racers pull beyond ground pursuit range. ASD tracks, relays position data, and keeps HEAT units coordinated — without interfering with the active race. Eyes in the sky, boots on the ground.
                 </p>
               </div>
               <div className="soi-tags" style={{ marginTop: '1.5rem' }}>
-                {['High-Speed Interceptor', 'PIT Authorized', 'Post-Race Pursuit', 'Highway Operations', 'ASD Assisted'].map(t => (
+                {['High-Speed Interceptor', 'Imported Vehicle Pursuit', 'PIT Authorized', 'Post-Race Enforcement', 'Highway Operations', 'ASD Coordinated'].map(t => (
                   <span key={t} className="tag tag-gold">{t}</span>
                 ))}
               </div>
